@@ -1,0 +1,36 @@
+import csv
+import re
+
+def rem_spch(arg): #remove space & " from strings
+    cleaned_list=[]
+    if type(arg) == str:
+        cleaned_arg= re.sub('[" ]', "", arg)
+        return cleaned_arg
+    elif type(arg) == list: #if arg is a list of strings
+        for item in arg:
+            cleaned_item = re.sub('[" ]', "", item)
+            cleaned_list.append(cleaned_item)
+        return cleaned_list
+    else:
+        raise Exception("rem_spch only works with type String or List of Strings")
+
+
+CSVfilename='./biostats.csv'
+SQL_dumpfile='./test_data.sql'
+SQL_table_name ='test_data_table'
+
+
+with open(SQL_dumpfile, 'a', encoding = "utf-8") as write_obj:
+    with open(CSVfilename, 'r') as read_obj:
+        csv_reader = csv.reader(read_obj)
+        csv_header = rem_spch(next(csv_reader))  # remove special characters
+        for index, line in enumerate(csv_reader):
+            line = rem_spch(line)   # remove special characters (")
+            if index<1 and line !=[]:
+                # Create Table, insert column names and data type (TEXT, int, varchar(255)...etc)
+                print_line = (f"CREATE TABLE `{SQL_table_name}` (`{csv_header[0]}` TEXT, `{csv_header[1]}` TEXT);")
+            elif line !=[]:
+                insert_into = (f"INSERT INTO `{SQL_table_name}` (`{csv_header[0]}`, `{csv_header[1]}`)")
+                insert_data = (f" VALUES (\"{line[0]}\",\"{line[1]}\");")
+                print_line =insert_into + insert_data
+            write_obj.write(print_line + "\n")
